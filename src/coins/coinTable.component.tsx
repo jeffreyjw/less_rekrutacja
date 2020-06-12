@@ -1,4 +1,4 @@
-import React, {useState, useCallback, useEffect} from 'react';
+import React from 'react';
 import {FlatList, TouchableOpacity, Text, View, StyleSheet} from 'react-native';
 import SvgUri from 'react-native-svg-uri';
 
@@ -9,9 +9,12 @@ interface CoinTableProps {
   coins: Coin[];
 }
 
+const ITEM_HEIGHT = 40;
+const SEPARATOR_HEIGHT = 1;
+
 const styles = StyleSheet.create({
   header: {
-    height: 40,
+    height: ITEM_HEIGHT,
     flexDirection: 'row',
     backgroundColor: '#dadada',
   },
@@ -21,7 +24,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   tableItem: {
-    height: 40,
+    height: ITEM_HEIGHT,
     flexDirection: 'row',
   },
   tableItemColumn: {
@@ -30,7 +33,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   separator: {
-    height: 1,
+    height: SEPARATOR_HEIGHT,
     backgroundColor: '#dadada',
   },
 });
@@ -92,6 +95,12 @@ export const CoinTable = ({coins}: CoinTableProps) => {
         data={coins}
         renderItem={({item, index}) => <CoinItem item={item} index={index} />}
         ItemSeparatorComponent={Separator}
+        keyExtractor={(item) => item.id}
+        getItemLayout={(data, index) => ({
+          length: ITEM_HEIGHT,
+          offset: ITEM_HEIGHT * index + SEPARATOR_HEIGHT * index,
+          index,
+        })}
       />
     </View>
   );
