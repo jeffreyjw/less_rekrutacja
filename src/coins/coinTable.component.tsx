@@ -115,13 +115,16 @@ export const CoinTable = ({coins}: CoinTableProps) => {
   const onCoinSort = useCallback(() => {
     const sorted: Coin[] = coins
       .map((coin) => ({
+        // add price to coin object
         ...coin,
         price: OHLCLocalCache[coin.id] ? OHLCLocalCache[coin.id].open : 0,
       }))
       .sort((a: CoinWithPrice, b: CoinWithPrice) => {
+        // sort coin objects by price, from biggest to lowest
         return b.price - a.price;
       })
       .map((coinWithPrice: CoinWithPrice) => {
+        // remove the price from coin objects
         const {price, ...coin} = coinWithPrice; // eslint-disable-line @typescript-eslint/no-unused-vars
         return coin;
       });

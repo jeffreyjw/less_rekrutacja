@@ -42,10 +42,6 @@ export const useOHLCData = (coinId: string) => {
 
   useEffect(() => {
     (async () => {
-      if (!setOHLCData) {
-        return;
-      }
-
       // due to possibly reaching a request limit,
       // we will try to load the data until we succeed,
       // with a random timeout
@@ -58,13 +54,17 @@ export const useOHLCData = (coinId: string) => {
       let success = false;
 
       while (!success) {
+        if (!setOHLCData) {
+          break;
+        }
+
         try {
           const data = await fetchOHLC(coinId);
           setOHLCData(data[0]);
           success = true;
         } catch (e) {
           success = false;
-          await timeout(300 + Math.random() * 500);
+          await timeout(1000 + Math.random() * 1000);
         }
       }
     })();
