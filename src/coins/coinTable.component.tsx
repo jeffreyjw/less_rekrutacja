@@ -1,15 +1,22 @@
 import React from 'react';
-import {FlatList, TouchableOpacity, Text, View, StyleSheet} from 'react-native';
+import {
+  FlatList,
+  TouchableOpacity,
+  Text,
+  View,
+  StyleSheet,
+  Button,
+} from 'react-native';
 import SvgUri from 'react-native-svg-uri';
 
 import {Coin} from './coins.data';
-import {use7DChartData} from './coins.hooks';
+import {use7DChartData, useOHLCData} from './coins.hooks';
 
 interface CoinTableProps {
   coins: Coin[];
 }
 
-const ITEM_HEIGHT = 40;
+const ITEM_HEIGHT = 50;
 const SEPARATOR_HEIGHT = 1;
 
 const styles = StyleSheet.create({
@@ -50,6 +57,9 @@ const CoinTableHeader = () => {
         <Text>Name</Text>
       </View>
       <View style={styles.headerColumn}>
+        <Text>Open</Text>
+      </View>
+      <View style={styles.headerColumn}>
         <Text>Chart</Text>
       </View>
     </View>
@@ -63,6 +73,7 @@ interface CoinItemProps {
 
 const CoinItem = ({item, index}: CoinItemProps) => {
   const chartData = use7DChartData(item.id);
+  const ohlcData = useOHLCData(item.id);
 
   return (
     <TouchableOpacity key={item.id}>
@@ -71,9 +82,11 @@ const CoinItem = ({item, index}: CoinItemProps) => {
           <Text>{index + 1}</Text>
         </View>
         <View style={styles.tableItemColumn}>
-          <Text>
-            {item.name} {item.symbol}
-          </Text>
+          <Text>{item.name}</Text>
+          <Text>{item.symbol}</Text>
+        </View>
+        <View style={styles.tableItemColumn}>
+          {ohlcData ? <Text>{ohlcData.open}</Text> : <Text>Loading</Text>}
         </View>
         <View style={styles.tableItemColumn}>
           {chartData ? (
@@ -90,6 +103,7 @@ const CoinItem = ({item, index}: CoinItemProps) => {
 export const CoinTable = ({coins}: CoinTableProps) => {
   return (
     <View>
+      <Button title="Sort loaded coins by prices" onPress={() => {}} />
       <CoinTableHeader />
       <FlatList
         data={coins}
