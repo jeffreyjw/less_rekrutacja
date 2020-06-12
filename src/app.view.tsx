@@ -29,6 +29,7 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 import {useCoins} from './coins/coins.hooks';
+import {CoinTable} from './coins/coinTable.component';
 
 declare const global: {HermesInternal: null | {}};
 
@@ -39,16 +40,7 @@ export const App = () => {
     <>
       <StatusBar barStyle="dark-content" />
       <SafeAreaView>
-        <FlatList
-          data={coins}
-          renderItem={({item}) => (
-            <TouchableOpacity key={item.id}>
-              <Text>{item.name}</Text>
-              <Text>{item.symbol}</Text>
-              <Text>{item.id}</Text>
-            </TouchableOpacity>
-          )}
-        />
+        <CoinTable coins={coins} />
       </SafeAreaView>
     </>
   ) : null;
