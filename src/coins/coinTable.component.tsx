@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useState, useCallback} from 'react';
 import {
   FlatList,
   TouchableOpacity,
@@ -10,8 +10,7 @@ import {
 import SvgUri from 'react-native-svg-uri';
 
 import {Coin} from './coins.data';
-import {use7DChartData, useOHLCData} from './coins.hooks';
-import {OHLCLocalCache} from './ohlc.cache';
+import {use7DChartData} from './coins.hooks';
 
 interface CoinTableProps {
   coins: Coin[];
@@ -74,13 +73,6 @@ interface CoinItemProps {
 
 const CoinItem = ({item, index}: CoinItemProps) => {
   const chartData = use7DChartData(item.id);
-  const ohlcData = useOHLCData(item.id);
-
-  useEffect(() => {
-    if (ohlcData) {
-      OHLCLocalCache[item.id] = ohlcData;
-    }
-  }, [item.id, ohlcData]);
 
   return (
     <TouchableOpacity key={item.id}>
@@ -93,7 +85,7 @@ const CoinItem = ({item, index}: CoinItemProps) => {
           <Text>{item.symbol}</Text>
         </View>
         <View style={styles.tableItemColumn}>
-          {ohlcData ? <Text>{ohlcData.open}</Text> : <Text>Loading</Text>}
+          <Text>{`$${item.quotes.USD.price.toFixed(4)}`}</Text>
         </View>
         <View style={styles.tableItemColumn}>
           {chartData ? (
@@ -113,21 +105,10 @@ export const CoinTable = ({coins}: CoinTableProps) => {
   const [sortedCoins, setSortedCoins] = useState<Coin[] | null>(null);
 
   const onCoinSort = useCallback(() => {
-    const sorted: Coin[] = coins
-      .map((coin) => ({
-        // add price to coin object
-        ...coin,
-        price: OHLCLocalCache[coin.id] ? OHLCLocalCache[coin.id].open : 0,
-      }))
-      .sort((a: CoinWithPrice, b: CoinWithPrice) => {
-        // sort coin objects by price, from biggest to lowest
-        return b.price - a.price;
-      })
-      .map((coinWithPrice: CoinWithPrice) => {
-        // remove the price from coin objects
-        const {price, ...coin} = coinWithPrice; // eslint-disable-line @typescript-eslint/no-unused-vars
-        return coin;
-      });
+    const sorted: Coin[] = coins.sort((a, b) => {
+      // sort coin objects by price, from biggest to lowest
+      return b.quotes.USD.price - a.quotes.USD.price;
+    });
 
     setSortedCoins(sorted);
   }, [coins]);
