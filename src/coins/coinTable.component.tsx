@@ -1,8 +1,9 @@
 import React, {useState, useCallback, useEffect} from 'react';
 import {FlatList, TouchableOpacity, Text, View, StyleSheet} from 'react-native';
-import {WebView} from 'react-native-webview';
+import SvgUri from 'react-native-svg-uri';
 
 import {Coin} from './coins.data';
+import {use7DChartData} from './coins.hooks';
 
 interface CoinTableProps {
   coins: Coin[];
@@ -55,17 +56,10 @@ const CoinTableHeader = () => {
 interface CoinItemProps {
   item: Coin;
   index: number;
-  allowChartLoading: boolean;
 }
 
-const CoinItem = ({item, index, allowChartLoading}: CoinItemProps) => {
-  const [chartLoaded, setChartLoaded] = useState(false);
-
-  useEffect(() => {
-    if (allowChartLoading) {
-      setChartLoaded(true);
-    }
-  }, [allowChartLoading]);
+const CoinItem = ({item, index}: CoinItemProps) => {
+  const chartData = use7DChartData(item.id);
 
   return (
     <TouchableOpacity key={item.id}>
@@ -79,7 +73,11 @@ const CoinItem = ({item, index, allowChartLoading}: CoinItemProps) => {
           </Text>
         </View>
         <View style={styles.tableItemColumn}>
-          {chartLoaded ? <Text>Chart</Text> : null}
+          {chartData ? (
+            <SvgUri width={120} height={23} svgXmlData={chartData} />
+          ) : (
+            <Text>Loading</Text>
+          )}
         </View>
       </View>
     </TouchableOpacity>
@@ -87,25 +85,13 @@ const CoinItem = ({item, index, allowChartLoading}: CoinItemProps) => {
 };
 
 export const CoinTable = ({coins}: CoinTableProps) => {
-  const [isScrolling, setScrolling] = useState(false);
-  const beginScrolling = useCallback(() => setScrolling(true), [setScrolling]);
-  const endScrolling = useCallback(() => setScrolling(false), [setScrolling]);
-
   return (
     <View>
       <CoinTableHeader />
       <FlatList
         data={coins}
-        renderItem={({item, index}) => (
-          <CoinItem
-            item={item}
-            index={index}
-            allowChartLoading={!isScrolling}
-          />
-        )}
+        renderItem={({item, index}) => <CoinItem item={item} index={index} />}
         ItemSeparatorComponent={Separator}
-        onScrollBeginDrag={beginScrolling}
-        onScrollEndDrag={endScrolling}
       />
     </View>
   );

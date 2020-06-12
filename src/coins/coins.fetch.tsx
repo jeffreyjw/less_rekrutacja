@@ -6,3 +6,14 @@ export const fetchCoins: () => Promise<Coin[]> = async () => {
 
   return coins;
 };
+
+export const fetch7DChart: (coinId: string) => Promise<string> = async (
+  coinId,
+) => {
+  const response = await fetch(
+    `https://graphs2.coinpaprika.com/currency/chart/${coinId}/7d/chart.svg`,
+  );
+  const chartData = await response.text();
+
+  return chartData;
+};

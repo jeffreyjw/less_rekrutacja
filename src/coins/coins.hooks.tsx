@@ -1,6 +1,6 @@
 import {useState, useEffect} from 'react';
 import {Coin} from './coins.data';
-import {fetchCoins} from './coins.fetch';
+import {fetchCoins, fetch7DChart} from './coins.fetch';
 
 export const useCoins = () => {
   const [coins, setCoins] = useState<Coin[] | null>(null);
@@ -16,4 +16,17 @@ export const useCoins = () => {
   }, []);
 
   return coins;
+};
+
+export const use7DChartData = (coinId: string) => {
+  const [chartData, setChartData] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const data = await fetch7DChart(coinId);
+      setChartData(data);
+    })();
+  }, [coinId]);
+
+  return chartData;
 };
