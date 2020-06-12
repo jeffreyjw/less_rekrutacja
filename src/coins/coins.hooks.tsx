@@ -45,12 +45,12 @@ export const useOHLCData = (coinId: string) => {
       // due to possibly reaching a request limit,
       // we will try to load the data until we succeed,
       // with a random timeout
-      // NOTE: this solution is only a quick fix due to time limitations,
+      // NOTE: this solution is only a quick fix due to time limitationsin the toy example,
       // a good solution for this problem would be changing the API so that
       // the coin data can be partially loaded, and the OHLC data
       // to be with this data, or being able to fetch more than one OHLC
       // data item at a time to make less requests
-      // (which should be done nevertheless)
+      // (which should be done and would be the best option for this use case)
       let success = false;
 
       while (!success) {
