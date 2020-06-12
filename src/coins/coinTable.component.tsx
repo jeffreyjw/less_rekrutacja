@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   FlatList,
   TouchableOpacity,
@@ -11,6 +11,7 @@ import SvgUri from 'react-native-svg-uri';
 
 import {Coin} from './coins.data';
 import {use7DChartData, useOHLCData} from './coins.hooks';
+import {OHLCLocalCache} from './ohlc.cache';
 
 interface CoinTableProps {
   coins: Coin[];
@@ -75,6 +76,12 @@ const CoinItem = ({item, index}: CoinItemProps) => {
   const chartData = use7DChartData(item.id);
   const ohlcData = useOHLCData(item.id);
 
+  useEffect(() => {
+    if (ohlcData) {
+      OHLCLocalCache[item.id] = ohlcData;
+    }
+  }, [item.id, ohlcData]);
+
   return (
     <TouchableOpacity key={item.id}>
       <View style={styles.tableItem}>
@@ -100,16 +107,38 @@ const CoinItem = ({item, index}: CoinItemProps) => {
   );
 };
 
+type CoinWithPrice = Coin & {price: number};
+
 export const CoinTable = ({coins}: CoinTableProps) => {
+  const [sortedCoins, setSortedCoins] = useState<Coin[] | null>(null);
+
+  const onCoinSort = useCallback(() => {
+    const sorted: Coin[] = coins
+      .map((coin) => ({
+        ...coin,
+        price: OHLCLocalCache[coin.id] ? OHLCLocalCache[coin.id].open : 0,
+      }))
+      .sort((a: CoinWithPrice, b: CoinWithPrice) => {
+        return b.price - a.price;
+      })
+      .map((coinWithPrice: CoinWithPrice) => {
+        const {price, ...coin} = coinWithPrice; // eslint-disable-line @typescript-eslint/no-unused-vars
+        return coin;
+      });
+
+    setSortedCoins(sorted);
+  }, [coins]);
+
   return (
     <View>
-      <Button title="Sort loaded coins by prices" onPress={() => {}} />
+      <Button title="Sort by loaded coin prices" onPress={onCoinSort} />
       <CoinTableHeader />
       <FlatList
-        data={coins}
+        data={sortedCoins || coins}
         renderItem={({item, index}) => <CoinItem item={item} index={index} />}
         ItemSeparatorComponent={Separator}
         keyExtractor={(item) => item.id}
+        horizontal={false}
         getItemLayout={(data, index) => ({
           length: ITEM_HEIGHT,
           offset: ITEM_HEIGHT * index + SEPARATOR_HEIGHT * index,
