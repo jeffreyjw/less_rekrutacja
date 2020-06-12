@@ -1,12 +1,7 @@
-import React from 'react';
-import {
-  FlatList,
-  TouchableOpacity,
-  Text,
-  ListRenderItem,
-  View,
-  StyleSheet,
-} from 'react-native';
+import React, {useState, useCallback, useEffect} from 'react';
+import {FlatList, TouchableOpacity, Text, View, StyleSheet} from 'react-native';
+import {WebView} from 'react-native-webview';
+
 import {Coin} from './coins.data';
 
 interface CoinTableProps {
@@ -17,7 +12,7 @@ const styles = StyleSheet.create({
   header: {
     height: 40,
     flexDirection: 'row',
-    backgroundColor: 'red',
+    backgroundColor: '#dadada',
   },
   headerColumn: {
     flex: 1,
@@ -33,7 +28,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  separator: {
+    height: 1,
+    backgroundColor: '#dadada',
+  },
 });
+
+const Separator = () => <View style={styles.separator} />;
 
 const CoinTableHeader = () => {
   return (
@@ -44,26 +45,68 @@ const CoinTableHeader = () => {
       <View style={styles.headerColumn}>
         <Text>Name</Text>
       </View>
+      <View style={styles.headerColumn}>
+        <Text>Chart</Text>
+      </View>
     </View>
   );
 };
 
-const CoinItem: ListRenderItem<Coin> = ({item, index}) => (
-  <TouchableOpacity key={item.id}>
-    <View style={styles.tableItem}>
-      <Text style={styles.tableItemColumn}>{index + 1}</Text>
-      <Text style={styles.tableItemColumn}>
-        {item.name} {item.symbol}
-      </Text>
-    </View>
-  </TouchableOpacity>
-);
+interface CoinItemProps {
+  item: Coin;
+  index: number;
+  allowChartLoading: boolean;
+}
+
+const CoinItem = ({item, index, allowChartLoading}: CoinItemProps) => {
+  const [chartLoaded, setChartLoaded] = useState(false);
+
+  useEffect(() => {
+    if (allowChartLoading) {
+      setChartLoaded(true);
+    }
+  }, [allowChartLoading]);
+
+  return (
+    <TouchableOpacity key={item.id}>
+      <View style={styles.tableItem}>
+        <View style={styles.tableItemColumn}>
+          <Text>{index + 1}</Text>
+        </View>
+        <View style={styles.tableItemColumn}>
+          <Text>
+            {item.name} {item.symbol}
+          </Text>
+        </View>
+        <View style={styles.tableItemColumn}>
+          {chartLoaded ? <Text>Chart</Text> : null}
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+};
 
 export const CoinTable = ({coins}: CoinTableProps) => {
+  const [isScrolling, setScrolling] = useState(false);
+  const beginScrolling = useCallback(() => setScrolling(true), [setScrolling]);
+  const endScrolling = useCallback(() => setScrolling(false), [setScrolling]);
+
   return (
     <View>
       <CoinTableHeader />
-      <FlatList data={coins} renderItem={CoinItem} />
+      <FlatList
+        data={coins}
+        renderItem={({item, index}) => (
+          <CoinItem
+            item={item}
+            index={index}
+            allowChartLoading={!isScrolling}
+          />
+        )}
+        ItemSeparatorComponent={Separator}
+        onScrollBeginDrag={beginScrolling}
+        onScrollEndDrag={endScrolling}
+      />
     </View>
   );
 };
